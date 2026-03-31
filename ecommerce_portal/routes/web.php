@@ -84,13 +84,13 @@ Route::get('vendor/forget',[VendorController::class, 'forget']);
 
 Route::get('vendor/',[VendorController::class,'index'])->middleware(VendorMiddleware::class);
 
-Route::get('vendor/add-product',[ProductController::class, 'addproduct']);
-Route::post('vendor/add-product',[ProductController::class, 'createproduct']);
+Route::get('admin/add-product',[ProductController::class, 'addproduct']);
+Route::post('admin/add-product',[ProductController::class, 'createproduct']);
 
 Route::get('vendor/view-product',[ProductController::class, 'viewproduct']);
 
-Route::get('vendor/edit-product/{p_id}',[ProductController::class, 'editproduct']);
-Route::put('vendor/edit-product/{p_id}',[ProductController::class, 'updateproduct']);
+Route::get('admin/edit-product/{p_id}',[ProductController::class, 'editproduct']);
+Route::put('admin/edit-product/{p_id}',[ProductController::class, 'updateproduct']);
 
 Route::delete('vendor/delete-product/{p_id}',[ProductController::class, 'deleteproduct']);
 

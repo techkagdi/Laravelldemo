@@ -1,4 +1,4 @@
-@extends('user.layouts.main')
+@extends('admin.includes.main')
 @push('title')
 <title>Product Report - Admin</title>
 @endpush
@@ -75,7 +75,7 @@
                                         #{{ $i + 1 }}
                                         @endif
                                     </td>
-                                    <td>{{ $product->product_name }}</td>
+                                    <td>{{ $product->name }}</td>
                                     <td>
                                         <strong>{{ $product->total_qty }}</strong> units
                                     </td>

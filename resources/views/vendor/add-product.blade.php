@@ -9,7 +9,7 @@
                 <main>
                     <div class="container-fluid px-4">
                         <div class="card p-4 mt-4">
-                        <form method="POST" action="{{url('vendor/add-product')}}"
+                        <form method="POST" action="{{url('admin/add-product')}}"
                         enctype="multipart/form-data">
                             @csrf
                             <div class="row">

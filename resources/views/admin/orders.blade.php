@@ -7,7 +7,6 @@
 $orders = App\Models\Order::with('billing', 'items.product.category')->get();
 @endphp
 
-
 @section('content')
 
 <div id="layoutSidenav_content">
@@ -18,7 +17,6 @@ $orders = App\Models\Order::with('billing', 'items.product.category')->get();
                     <div class="col-xl-12 col-md-12">
                         <div class="d-flex">
                             <h4>Orders</h4>
-
                         </div>
                         <div class="mt-3">
                             <table id="datatablesSimple">
@@ -35,46 +33,58 @@ $orders = App\Models\Order::with('billing', 'items.product.category')->get();
                                     @foreach ($orders as $order)
                                     <tr>
                                         <th scope="row">{{ $order->order_no }}</th>
-                                        <td> {{ $order->billing->fullname }}</td>
-                                        <td>₹ {{ $order->total }}</td>
+
+                                        {{-- FIX: null-safe in case billing record is missing --}}
+                                        <td>{{ $order->billing->fullname ?? 'N/A' }}</td>
+
+                                        <td>₹ {{ number_format($order->total, 2) }}</td>
+
                                         <td>
                                             @php
-                                            $statusClass = match($order->status){
+                                            $statusClass = match($order->status) {
                                             'pending' => 'text-bg-secondary',
                                             'processing' => 'text-bg-warning',
                                             'on the way' => 'text-bg-info',
                                             'delivered' => 'text-bg-success',
-                                            }
+                                            default => 'text-bg-secondary', // FIX: was missing, caused crash
+                                            };
                                             @endphp
-                                            <span class="badge rounded-pill {{ $statusClass }}">{{ $order->status }}</span>
-
+                                            <span class="badge rounded-pill {{ $statusClass }}">
+                                                {{ $order->status }}
+                                            </span>
                                         </td>
+
                                         <td>
-                                            @if ($order->status != 'delivered')
-                                            <a href="{{ route('order.processing', $order->order_id) }}" class="btn btn-secondary btn-sm" title="processing"><i class="fa-solid fa-rotate"></i></a>
-                                            <a href="{{ route('order.ontheway', $order->order_id) }}" class="btn btn-primary btn-sm" title="on the way"><i class="fa-solid fa-truck"></i></a>
+                                            @if($order->status != 'delivered')
+                                            <a href="{{ route('order.processing', $order->order_id) }}"
+                                                class="btn btn-secondary btn-sm" title="Processing">
+                                                <i class="fa-solid fa-rotate"></i>
+                                            </a>
+                                            <a href="{{ route('order.ontheway', $order->order_id) }}"
+                                                class="btn btn-primary btn-sm" title="On the way">
+                                                <i class="fa-solid fa-truck"></i>
+                                            </a>
                                             @endif
 
-                                            <a href="{{ route('order.delivered', $order->order_id) }}" class="btn btn-success btn-sm" title="Delivered"><i class="fa-solid fa-check"></i></a>
-                                            <a href="{{url('admin/order-detail/' .$order->order_id)}}" class="btn btn-warning btn-sm"><i class="fa-solid fa-eye"></i></a>
-                                            <a href="{{url('admin/order-detail/' .$order->order_id)}}" class=" text-decoration-none mx-2">View Details</a>
-
+                                            <a href="{{ route('order.delivered', $order->order_id) }}"
+                                                class="btn btn-success btn-sm" title="Delivered">
+                                                <i class="fa-solid fa-check"></i>
+                                            </a>
+                                            <a href="{{ url('admin/order-detail/' . $order->order_id) }}"
+                                                class="btn btn-warning btn-sm" title="View Details">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                     @endforeach
-
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </main>
+</div> {{-- FIX: closing div for layoutSidenav_content was missing --}}
 
-
-
-
-
-    @endsection
+@endsection

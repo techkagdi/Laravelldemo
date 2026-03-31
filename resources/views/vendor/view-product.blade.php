@@ -51,7 +51,7 @@
                                                 <td>{{ $product->p_stock }}</td>
                                                 <td>{{ $product->p_description }}</td>
                                                 <td>
-                                                     <a href="{{url('vendor/edit-product',$product->p_id)}}" class="btn btn-primary btn-sm">
+                                                     <a href="{{url('admin/edit-product',$product->p_id)}}" class="btn btn-primary btn-sm">
                                                         <i class="fa-solid fa-pen-to-square"></i></a>
                                                         <form method="POST" action="{{url('vendor/delete-product',$product->p_id)}}"
                                                         class="d-inline">

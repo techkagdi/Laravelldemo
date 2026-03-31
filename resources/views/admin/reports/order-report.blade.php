@@ -1,4 +1,4 @@
-@extends('user.layouts.main')
+@extends('admin.includes.main')
 @push('title')
 <title>Order Report - Admin</title>
 @endpush

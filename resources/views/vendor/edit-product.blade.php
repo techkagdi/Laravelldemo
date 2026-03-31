@@ -9,7 +9,7 @@
                 <main>
                     <div class="container-fluid px-4">
                         <div class="card p-4 mt-4">
-                            <form method="POST" action="{{url('vendor/edit-product',$product->p_id)}}" enctype="multipart/form-data">
+                            <form method="POST" action="{{url('admin/edit-product',$product->p_id)}}" enctype="multipart/form-data">
                                 @csrf
                                 @method('PUT')
                                 <div class="row">

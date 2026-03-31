@@ -16,7 +16,7 @@ class ProductController extends Controller
     public function addproduct()
     {
         $category= Category::all();
-        return view('vendor/add-product',compact('category'));
+        return view('admin/add-product',compact('category'));
     }
 
     public function createproduct(Request $request)
@@ -40,7 +40,7 @@ class ProductController extends Controller
              "p_description" => $request->p_description,
              "p_image" => $request->file('p_image')->store('products', 'public')
         ]);
-        return redirect('vendor/add-product')->with('msg','Product Add Successfully');
+        return redirect('admin/add-product')->with('msg','Product Add Successfully');
     }
 
     public function viewproduct()
@@ -52,7 +52,7 @@ class ProductController extends Controller
     {
         $product= Product::find($p_id);
         $category= Category::all();
-        return view('vendor/edit-product',compact('product','category'));
+        return view('admin/edit-product',compact('product','category'));
     }
 
     public function updateproduct(Request $request,$p_id)
