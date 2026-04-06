@@ -15,12 +15,12 @@
                     <form method="GET" action="{{ url('admin/product-report') }}">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">From Date</label>
+                                <label>From Date</label>
                                 <input type="date" name="from" class="form-control"
                                     value="{{ request('from') }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">To Date</label>
+                                <label>To Date</label>
                                 <input type="date" name="to" class="form-control"
                                     value="{{ request('to') }}" required>
                             </div>
@@ -28,78 +28,128 @@
                                 <button type="submit" class="btn btn-dark flex-fill">
                                     Generate Report
                                 </button>
-                                @if(isset($products) && $products->count())
-                                <a href="{{ url('admin/product-report/export') }}?from={{ request('from') }}&to={{ request('to') }}"
-                                    class="btn btn-success flex-fill">
-                                    Export Excel
-                                </a>
-                                @endif
+
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
 
-            {{-- Report Table --}}
-            @if(isset($products))
-            @if($products->count())
+            {{-- PIE CHART --}}
+            @if(isset($products) && $products->count())
+
+            @php
+            $labels = $products->pluck('name');
+            $data = $products->pluck('total_qty'); // or total_revenue
+            @endphp
+
             <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-semibold">
-                        Product Sales from <strong>{{ request('from') }}</strong> to <strong>{{ request('to') }}</strong>
-                    </span>
-                    <span class="badge bg-secondary">{{ $products->count() }} products</span>
+                <div class="card-header">
+                    Product Sales Chart (Pie)
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Product Name</th>
-                                    <th>Total Qty Sold</th>
-                                    <th>Total Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($products as $i => $product)
-                                <tr>
-                                    <td>
-                                        @if($i === 0)
-                                        <span class="badge bg-warning text-dark">#1</span>
-                                        @elseif($i === 1)
-                                        <span class="badge bg-secondary">#2</span>
-                                        @elseif($i === 2)
-                                        <span class="badge" style="background:#cd7f32">#3</span>
-                                        @else
-                                        #{{ $i + 1 }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $product->name }}</td>
-                                    <td>
-                                        <strong>{{ $product->total_qty }}</strong> units
-                                    </td>
-                                    <td>₹ {{ number_format($product->total_revenue, 2) }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot class="table-dark">
-                                <tr>
-                                    <td colspan="2" class="text-end fw-bold">Totals</td>
-                                    <td class="fw-bold">{{ $products->sum('total_qty') }} units</td>
-                                    <td class="fw-bold">₹ {{ number_format($products->sum('total_revenue'), 2) }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                <div class="card-body">
+                    <canvas id="productChart"
+                        data-labels='@json($labels)'
+                        data-values='@json($data)'>
+                    </canvas>
                 </div>
             </div>
-            @else
-            <div class="alert alert-warning">No product sales found for the selected date range.</div>
+
             @endif
+
+            {{-- TABLE --}}
+            @if(isset($products) && $products->count())
+            <div class="card mb-4">
+                <div class="card-header">
+                    Product Sales from {{ request('from') }} to {{ request('to') }}
+                </div>
+
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Rank</th>
+                                <th>Product Name</th>
+                                <th>Total Qty</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach($products as $i => $product)
+                            <tr>
+                                <td>#{{ $i+1 }}</td>
+                                <td>{{ $product->name }}</td>
+                                <td>{{ $product->total_qty }}</td>
+                                <td>₹ {{ $product->total_revenue }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+
+                        <tfoot>
+                            <tr>
+                                <td colspan="2">Total</td>
+                                <td>{{ $products->sum('total_qty') }}</td>
+                                <td>₹ {{ $products->sum('total_revenue') }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
             @endif
 
         </div>
     </main>
 </div>
+
+{{-- CHART SCRIPT --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const chartEl = document.getElementById('productChart');
+        if (!chartEl) return;
+
+        const labels = JSON.parse(chartEl.dataset.labels);
+        const data = JSON.parse(chartEl.dataset.values);
+
+        const colors = [
+            '#FF6384', // red
+            '#36A2EB', // blue
+            '#FFCE56', // yellow
+            '#4BC0C0', // teal
+            '#9966FF', // purple
+            '#FF9F40', // orange
+            '#00C49F', // green
+            '#C9CBCF', // grey
+            '#8E44AD', // dark purple
+            '#2ECC71' // emerald
+        ];
+
+        new Chart(chartEl, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+
+    });
+</script>
 @endsection
