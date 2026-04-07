@@ -18,6 +18,11 @@ $orders = App\Models\Order::with('billing', 'items.product.category')->get();
                         <div class="d-flex">
                             <h4>Orders</h4>
                         </div>
+                        @if(session('msg'))
+                        <div class="alert alert-success">
+                            {{ session('msg') }}
+                        </div>
+                        @endif
                         <div class="mt-3">
                             <table id="datatablesSimple">
                                 <thead>
@@ -53,27 +58,36 @@ $orders = App\Models\Order::with('billing', 'items.product.category')->get();
                                                 {{ $order->status }}
                                             </span>
                                         </td>
-
                                         <td>
-                                            @if($order->status != 'delivered')
-                                            <a href="{{ route('order.processing', $order->order_id) }}"
-                                                class="btn btn-secondary btn-sm" title="Processing">
-                                                <i class="fa-solid fa-rotate"></i>
-                                            </a>
-                                            <a href="{{ route('order.ontheway', $order->order_id) }}"
-                                                class="btn btn-primary btn-sm" title="On the way">
-                                                <i class="fa-solid fa-truck"></i>
-                                            </a>
-                                            @endif
+                                            <div class="d-flex gap-2 flex-wrap">
 
-                                            <a href="{{ route('order.delivered', $order->order_id) }}"
-                                                class="btn btn-success btn-sm" title="Delivered">
-                                                <i class="fa-solid fa-check"></i>
-                                            </a>
-                                            <a href="{{ url('admin/order-detail/' . $order->order_id) }}"
-                                                class="btn btn-warning btn-sm" title="View Details">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </a>
+                                                @if($order->status == 'pending')
+                                                <a href="{{ route('order.processing', $order->order_id) }}"
+                                                    class="btn btn-sm btn-outline-secondary shadow-sm action-btn">
+                                                    <i class="fa-solid fa-gear"></i> Processing
+                                                </a>
+                                                @endif
+
+                                                @if($order->status == 'processing')
+                                                <a href="{{ route('order.ontheway', $order->order_id) }}"
+                                                    class="btn btn-sm btn-outline-primary shadow-sm action-btn">
+                                                    <i class="fa-solid fa-truck"></i> Ship
+                                                </a>
+                                                @endif
+
+                                                @if($order->status == 'on the way')
+                                                <a href="{{ route('order.delivered', $order->order_id) }}"
+                                                    class="btn btn-sm btn-outline-success shadow-sm action-btn">
+                                                    <i class="fa-solid fa-check-circle"></i> Deliver
+                                                </a>
+                                                @endif
+
+                                                <a href="{{ url('admin/order-detail/'.$order->order_id) }}"
+                                                    class="btn btn-sm btn-outline-warning shadow-sm action-btn">
+                                                    <i class="fa-solid fa-eye"></i> View
+                                                </a>
+
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach

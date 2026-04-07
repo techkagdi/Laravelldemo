@@ -70,9 +70,11 @@ Route::get('login1', [UserController::class, 'login1']);
 
 // User Dashboard Route Start Here:
 Route::get('user/{slug}', [UserController::class, 'index']);
-
+Route::get('user/invoice/{id}', [UserController::class, 'invoice']);
 Route::get('user/order-history/{slug}', [UserController::class, 'history']);
-
+Route::get('admin/order/processing/{id}', [AdminController::class, 'markProcessing'])->name('order.processing');
+Route::get('admin/order/ontheway/{id}', [AdminController::class, 'markOnTheWay'])->name('order.ontheway');
+Route::get('admin/order/delivered/{id}', [AdminController::class, 'markDelivered'])->name('order.delivered');
 Route::get('user/detail/{slug}', [UserController::class, 'detail']);
 
 Route::get('user/settings/{slug}', [UserController::class, 'settings']);
@@ -117,13 +119,16 @@ Route::delete('admin/delete-product/{p_id}', [ProductController::class, 'deletep
 // Route::get('vendor/orders',[VendorController::class, 'orders']);
 
 // Route::get('vendor/order-detail',[VendorController::class, 'orderdetail']);
-Route::get('admin/order-detail/{id}', [VendorController::class, 'orderdetail'])->name('vendor.order.detail');
+Route::get('admin/order-detail/{id}', [VendorController::class, 'orderdetail'])->name('admin.order.detail');
 
 Route::get('admin/users', [VendorController::class, 'users']);
 
 Route::get('admin/profile', [VendorController::class, 'profile']);
 Route::put('admin/profile', [VendorController::class, 'updateprofile']);
 
+use App\Http\Controllers\AuthController;
+
+Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 // Admin Dashboard Start Here
 
 Route::get('admin/login', [AdminController::class, 'login']);

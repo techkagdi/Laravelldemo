@@ -261,71 +261,102 @@ class UserController extends Controller
 
     public function verifyOtp(Request $request)
     {
-        $sessionOtp       = Session::get('otp');
-        $sessionExpiresAt = Session::get('otp_expires_at');
-        $email            = Session::get('email');
-        $billingData      = Session::get('billing_data');
+        try {
+            $sessionOtp       = Session::get('otp');
+            $sessionExpiresAt = Session::get('otp_expires_at');
+            $email            = Session::get('email');
+            $billingData      = Session::get('billing_data');
 
-        // Check session exists
-        if (!$sessionOtp || !$email) {
+            // Debug: uncomment these lines temporarily if still getting errors
+            // return response()->json([
+            //     'debug_otp'      => $sessionOtp,
+            //     'debug_email'    => $email,
+            //     'debug_billing'  => $billingData,
+            //     'request_otp'    => $request->otp,
+            //     'request_email'  => $request->email,
+            // ]);
+
+            // Session expired or missing
+            if (!$sessionOtp || !$email || !$billingData) {
+                return response()->json([
+                    'verified' => false,
+                    'error'    => 'Session expired. Please fill the form again.'
+                ]);
+            }
+
+            // OTP expired
+            if ($sessionExpiresAt && now()->greaterThan($sessionExpiresAt)) {
+                return response()->json([
+                    'verified' => false,
+                    'error'    => 'OTP expired. Please request a new one.'
+                ]);
+            }
+
+            // OTP mismatch
+            if ((string)$request->otp !== (string)$sessionOtp) {
+                return response()->json([
+                    'verified' => false,
+                    'error'    => 'Invalid OTP. Please try again.'
+                ]);
+            }
+
+            // Check if user already exists
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'email'    => $email,
+                    'phone'    => $billingData['phone'] ?? null,
+                    'is_login' => true,
+                ]);
+            } else {
+                $user->is_login = true;
+                $user->save();
+            }
+
+            // Save billing record
+            $billing           = new Billing();
+            $billing->user_id  = $user->user_id;
+            $billing->fullname = $billingData['fullname']  ?? '';
+            $billing->email    = $billingData['email']     ?? '';
+            // $billing->phone    = $billingData['phone']     ?? '';
+            $billing->address  = $billingData['address']   ?? '';
+            $billing->city     = $billingData['city']      ?? '';
+            $billing->state    = $billingData['state']     ?? '';
+            $billing->pincode  = $billingData['pincode']   ?? '';
+            $billing->landmark = $billingData['landmark']  ?? '';
+            $billing->country  = $billingData['country']   ?? 'India';
+            $billing->save();
+
+            Auth::login($user);
+
+            Session::forget(['otp', 'otp_expires_at', 'billing_data', 'email']);
+            Session::put('user_id', $user->user_id);
+
+            return response()->json(['verified' => true]);
+        } catch (\Exception $e) {
+            // This will show you the REAL error instead of generic "server error"
             return response()->json([
                 'verified' => false,
-                'error'    => 'Session expired. Please fill the form again.'
+                'error'    => 'Error: ' . $e->getMessage()
             ]);
         }
+    }
+    public function logout()
+    {
+        Auth::logout();
+        Session::flush();
+        return redirect('/')->with('msg', 'Logged out successfully');
+    }
+    public function invoice($id)
+    {
+        $user = Auth::user();
 
-        // Check OTP not expired
-        if (now()->greaterThan($sessionExpiresAt)) {
-            return response()->json([
-                'verified' => false,
-                'error'    => 'OTP expired. Please request a new one.'
-            ]);
-        }
+        $order = \App\Models\Order::with('items')->where('order_id', $id)->firstOrFail();
 
-        // Check OTP matches
-        if ((string)$request->otp !== (string)$sessionOtp) {
-            return response()->json([
-                'verified' => false,
-                'error'    => 'Invalid OTP. Please try again.'
-            ]);
-        }
+        $billing = \App\Models\Billing::where('user_id', $user->user_id)->first();
 
-        // OTP correct — create user
-        $user = User::where('email', $email)->first();
-
-        if (!$user) {
-            $user = User::create([
-                'email'    => $email,
-                'phone'    => $billingData['phone'] ?? null,
-                'is_login' => true,
-            ]);
-        } else {
-            $user->is_login = true;
-            $user->save();
-        }
-
-        // Save billing — user_id defaults to 1 if not set (keeps your DB structure)
-        $billing          = new Billing();
-        $billing->user_id = $user->user_id ?? 1;
-        $billing->fullname = $billingData['fullname']  ?? '';
-        $billing->email    = $billingData['email']     ?? '';
-        $billing->phone    = $billingData['phone']     ?? '';
-        $billing->address  = $billingData['address']   ?? '';
-        $billing->city     = $billingData['city']      ?? '';
-        $billing->state    = $billingData['state']     ?? '';
-        $billing->pincode  = $billingData['pincode']   ?? '';
-        $billing->landmark = $billingData['landmark']  ?? '';
-        $billing->country  = $billingData['country']   ?? 'India';
-        $billing->save();
-
-        // Log the user in
-        Auth::login($user);
-
-        // Clear session
-        Session::forget(['otp', 'otp_expires_at', 'billing_data', 'email']);
-        Session::put('user_id', $user->user_id);
-
-        return response()->json(['verified' => true]);
+        return view('user.invoice', compact('order', 'billing', 'user'));
     }
     public function updateSettings(Request $request)
     {
