@@ -11,7 +11,7 @@
             <div class="card p-4 mt-4">
                 <form method="POST" action="{{url('admin/edit-product',$product->p_id)}}" enctype="multipart/form-data">
                     @csrf
-                    @method('PUT')
+                    @method('post')
                     <div class="row">
 
                         <div class="col-xl-8 col-md-8">

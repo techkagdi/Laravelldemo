@@ -32,7 +32,7 @@ class ProductController extends Controller
 
         ]);
         Product::create([
-            "v_id" => session('vendorId'),
+            "v_id" => 2,
             "p_name" => $request->p_name,
             "p_price" => $request->p_price,
             "c_id" => $request->c_id,
@@ -57,28 +57,30 @@ class ProductController extends Controller
 
     public function updateproduct(Request $request, $p_id)
     {
-        $product = Product::find($p_id);
+        $product = Product::findOrFail($p_id);
 
         $image = $product->p_image;
+
         if ($request->hasFile('p_image')) {
             $image = $request->file('p_image')->store('products', 'public');
-
-            $product->update([
-                "p_name" => $request->p_name,
-                "p_price" => $request->p_price,
-                "c_id" => $request->c_id,
-                "p_stock" => $request->p_stock,
-                "p_description" => $request->p_description,
-                "p_image" => $image
-            ]);
-            return redirect('vendor/view-product')->with('msg', 'Product Update Successfully');
         }
+
+        $product->update([
+            "p_name" => $request->p_name,
+            "p_price" => $request->p_price,
+            "c_id" => $request->c_id,
+            "p_stock" => $request->p_stock,
+            "p_description" => $request->p_description,
+            "p_image" => $image
+        ]);
+
+        return redirect('admin/view-product')->with('msg', 'Product Updated Successfully');
     }
 
     public function deleteproduct($p_id)
     {
         $product = Product::find($p_id);
         $product->delete();
-        return redirect('vendor/view-product')->with('msg', 'Product Delete Successfully');
+        return redirect('admin/view-product')->with('msg', 'Product Delete Successfully');
     }
 }

@@ -112,7 +112,7 @@ Route::post('admin/add-product', [ProductController::class, 'createproduct']);
 Route::get('admin/view-product', [ProductController::class, 'viewproduct']);
 
 Route::get('admin/edit-product/{p_id}', [ProductController::class, 'editproduct']);
-Route::put('admin/edit-product/{p_id}', [ProductController::class, 'updateproduct']);
+Route::post('admin/edit-product/{p_id}', [ProductController::class, 'updateproduct']);
 
 Route::delete('admin/delete-product/{p_id}', [ProductController::class, 'deleteproduct']);
 
@@ -132,6 +132,7 @@ Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 // Admin Dashboard Start Here
 
 Route::get('admin/login', [AdminController::class, 'login']);
+Route::post('admin/login', [AdminController::class, 'login2']);
 
 Route::get('admin/', [AdminController::class, 'index']);
 

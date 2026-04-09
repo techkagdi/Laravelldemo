@@ -162,7 +162,7 @@ class VendorController extends Controller
     {
 
         // return view('vendor/order-detail');
-        $vendorId = session('vendorId');
+        $vendorId = 2;
         $order = Order::with(['billing'])->findOrFail($id);
 
         $orderItems = $order->items()

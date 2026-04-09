@@ -11,7 +11,17 @@ class AdminController extends Controller
     {
         return view('admin/login');
     }
+    public function login2(Request $request)
+    {
+        $phone = $request->phone;
+        $password = $request->password;
 
+        if ($phone == '9898989898' && $password == '123456') {
+            return redirect('admin/index');
+        } else {
+            return redirect()->back()->with('msg', 'Invalid Credentials');
+        }
+    }
     public function index()
     {
         return view('admin/index');
